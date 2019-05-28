@@ -1,0 +1,17 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: confluence-datacenter-pv
+  labels:
+    atlassian-product: atlassian-confluence
+    type: datacenter
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: nfs.example.com
+    path: /tmp/nfs/confluence-datacenter
+    readOnly: false

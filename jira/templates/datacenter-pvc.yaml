@@ -1,0 +1,21 @@
+{{- if and .Values.Datacenter.Enabled (not .Values.Persistence.DatacenterExistingClaimName) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-datacenter-pvc
+  labels:
+{{- include "jira-chart.labels" . | indent 4 }}
+spec:
+  accessModes: [ {{ .Values.Persistence.DatacenterVolumeClaimTemplates.AccessModes | quote }} ]
+  resources:
+    requests:
+      storage: {{ .Values.Persistence.DatacenterVolumeClaimTemplates.Storage | quote }}
+  storageClassName: {{ .Values.Persistence.DatacenterVolumeClaimTemplates.StorageClassName | quote }}
+  {{- if .Values.Persistence.DatacenterVolumeClaimTemplates.Selector.Enabled }}
+  selector:
+    matchLabels:
+      {{- range $key,$value := .Values.Persistence.DatacenterVolumeClaimTemplates.Selector.MatchLabels }}
+      {{ $key }} : {{ $value }}
+      {{- end }}
+    {{- end }}
+{{- end -}}

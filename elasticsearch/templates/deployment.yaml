@@ -1,0 +1,101 @@
+{{- if .Values.deploy }}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "elasticsearch.fullname" . }}
+  labels:
+    app: {{ template "elasticsearch.name" . }}
+    chart: {{ template "elasticsearch.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "elasticsearch.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "elasticsearch.name" . }}
+        release: {{ .Release.Name }}
+        kubernetes.io/cluster-service: "true"
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          {{- if .Values.basic_auth.enabled }}
+            - name: AUTH_BASIC_HTTP_ENABLED
+              value: "true"
+            - name: AUTH_BASIC_USERNAME
+              value: {{ .Values.basic_auth.username }}
+            - name: AUTH_BASIC_PASSWORD
+            {{- if .Values.basic_auth.passwordSecretName }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.basic_auth.passwordSecretName }}
+                  key: {{ .Values.basic_auth.passwordSecretKey }}
+            {{- else }}
+              value: {{ .Values.basic_auth.password }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - name: rest
+              containerPort: 9200
+              protocol: TCP
+            - name: transport
+              containerPort: 9300
+              protocol: TCP
+        {{- if .Values.livenessProbe }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.LivenessProbe.Path }}
+              port: {{ .Values.LivenessProbe.Port }}
+        {{- end }}
+        {{- if .Values.ReadinessProbe }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.ReadinessProbe.Path }}
+              port: {{ .Values.ReadinessProbe.Port }}
+        {{- end }}
+        {{- if .Values.Resources }}
+          resources:
+            requests:
+              cpu: "{{ .Values.Resources.cpuRequest }}"
+              memory: "{{ .Values.Resources.memoryRequest }}"
+            limits:
+              cpu: "{{ .Values.Resources.cpuLimit }}"
+              memory: "{{ .Values.Resources.memoryLimit }}"
+        {{- end }}
+
+          volumeMounts:
+            - name: es-persistent-storage
+              mountPath: /usr/share/elasticsearch/data
+
+      volumes:
+        - name: "es-persistent-storage"
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaimName | default (printf "%v-elasticsearch-pvc" .Release.Name) }}
+
+      {{- if .Values.image.privateRegistry }}
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecret }}
+      {{- end }}
+
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+{{- end }}

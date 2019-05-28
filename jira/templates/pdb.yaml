@@ -1,0 +1,11 @@
+{{- if .Values.PodDisruption.Enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-pdb
+spec:
+  minAvailable: {{ .Values.PodDisruption.MinAvailable }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+{{- end }}

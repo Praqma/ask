@@ -1,0 +1,19 @@
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: confluence-postgresql-pv
+  labels:
+    product: postgresql
+    stage: canary
+    supporting: atlassian-confluence
+spec:
+  storageClassName: hostpath
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/tmp/confluence-postgresql-pv"
+    type: DirectoryOrCreate

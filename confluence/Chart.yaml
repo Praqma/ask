@@ -1,0 +1,11 @@
+apiVersion: v1
+description: A Confluence Server Helm chart for Kubernetes
+name: confluence
+version: 0.4.1
+home: https://praqma.com/
+maintainers:
+  - name: "@sami-alajrami"
+    email: sami@praqma.com
+  - name: "@KamranAzeem"
+    email: kaz@praqma.com
+icon: https://wac-cdn.atlassian.com/dam/jcr:a22c9f02-b225-4e34-9f1d-e5ac0265e543/confluence_rgb_slate.png    

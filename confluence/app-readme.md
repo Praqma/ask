@@ -1,0 +1,2 @@
+# Confluence 
+Confluence is a collaboration software program developed and published by Australian software company Atlassian. Atlassian wrote Confluence in the Java programming language, and first published it in 2004

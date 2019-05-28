@@ -1,0 +1,165 @@
+# Note: DO NOT use TABs. Just use spaces.
+
+apiVersion: apps/v1beta1
+## We needed to use VolumeTemplate, which does not allow use of Deployment, so we had to use StatefulSet
+# kind: Deployment
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+{{- include "confluence-chart.labels" . | indent 4 }}
+spec:
+  # This service should already exist
+  serviceName: {{ .Release.Name }}
+  replicas: {{ .Values.Replicas | default 1 }}    ## replicas 2
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      {{- if .Values.RBAC.Enabled }}
+      serviceAccountName: confluence
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.TerminationGracePeriodSeconds | default 50 }}
+      containers:
+      - name: {{ required "A container name is required!" .Values.ContainerName }}
+        image: {{ .Values.Image.Name }}:{{ .Values.Image.Tag }}
+        imagePullPolicy: {{ .Values.Image.ImagePullPolicy }}
+        # Resources were added by Kamran on 17 Feb 2018
+        {{- if .Values.Resources }}
+        resources:
+          requests:
+            cpu: "{{ .Values.Resources.cpuRequest }}"
+            memory: "{{ .Values.Resources.memoryRequest }}"
+          limits:
+            cpu: "{{ .Values.Resources.cpuLimit }}"
+            memory: "{{ .Values.Resources.memoryLimit }}"
+        {{- end }}
+
+        ports:
+          - containerPort: {{ .Values.ContainerPort }}
+            name: confluence-main
+          {{- if .Values.Datacenter.Enabled }}
+          - containerPort: 8091
+            name: synchrony
+          {{- end }}
+
+        env:
+        {{- if .Values.Certs.Enabled }}
+          - name: ENABLE_CERT_IMPORT
+            value: "true"
+          - name: SSL_CERTS_PATH
+            value: {{ .Values.Certs.MountPath }}
+        {{- end }}
+        {{- if .Values.Datacenter.Enabled }}
+          - name: DATACENTER_MODE
+            value: "true"
+          - name: CONFLUENCE_DATACENTER_SHARE
+            value: {{ .Values.Persistence.DatacenterMountPath }}
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: CONFLUENCE_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: CONFLUENCE_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: CONFLUENCE_SERVICE_NAME
+            value: {{ .Release.Name }}
+        {{- end }}
+        {{- range $key, $value := .Values.EnvVars }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+        {{- end }}
+        {{- if .Values.PluginIds }}
+          - name: PLUGIN_IDS
+            value: {{- range .Values.PluginIds }} {{ . }}; {{- end }}
+        {{- end }}
+
+        {{- if .Values.livenessProbe }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.LivenessProbe.Path }}
+            port: {{ .Values.LivenessProbe.Port }}
+        {{- end }}
+        {{- if .Values.ReadinessProbe }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.ReadinessProbe.Path }}
+            port: {{ .Values.ReadinessProbe.Port }}
+        {{- end }}
+
+        volumeMounts:
+          - name: "confluence-persistent-storage"
+            mountPath: /var/atlassian/application-data/confluence/
+          {{- if .Values.Datacenter.Enabled }}
+          - name: "confluence-datacenter"
+            mountPath: {{ .Values.Persistence.DatacenterMountPath }}
+          {{- end }}
+          {{- if .Values.Certs.Enabled }}
+          - name: "confluence-certs"
+            mountPath: {{ .Values.Certs.MountPath }}
+          {{- end }}
+
+      volumes:
+        {{- if .Values.Certs.Enabled }}
+        - name: confluence-certs
+          secret:
+            secretName: {{ .Values.Certs.SecretName }}
+        {{- end }}
+      {{- if .Values.Datacenter.Enabled }}
+        - name: "confluence-datacenter"
+          persistentVolumeClaim:
+            claimName: {{ .Values.Persistence.DatacenterExistingClaimName | default (printf "%v-datacenter-pvc" .Release.Name) }}
+      {{- end }}
+
+      # This is pod level security context.
+       # The only relevant directive is fsGroup, which creates/prepares the mounted volume by 'chgrp'-ing it to the ID mentioned as fsGroup.
+          # The volume mount then has the group sticky bit turned on (setgid) , so  new files created in the volume will be owned by fsGroup;
+          #     which enables the user (uid 1000 in our / Confluence case) to be able to write in that volume.
+
+          # Note: runAsUser is useless in this situation.
+          # runAsUser: 1000
+          # The details about securityContext are here:
+          # * - https://kubernetes.io/docs/api-reference/v1.6/#podsecuritycontext-v1-core
+      securityContext:
+        fsGroup: {{ .Values.SecurityContext }}
+      {{- if .Values.Image.PrivateRegistry }}
+      imagePullSecrets:
+      - name: {{ .Values.Image.PullSecret }}
+      {{- end }}
+
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+
+  volumeClaimTemplates:
+  - metadata:
+      name: confluence-persistent-storage
+    spec:
+      accessModes: [ {{ .Values.Persistence.VolumeClaimTemplates.AccessModes | quote }} ]
+      resources:
+        requests:
+          storage: {{ .Values.Persistence.VolumeClaimTemplates.Storage | quote }}
+      storageClassName: {{ .Values.Persistence.VolumeClaimTemplates.StorageClassName | quote }}
+  {{- if .Values.Persistence.VolumeClaimTemplates.Selector.Enabled }}
+      selector:
+        matchLabels:
+          {{- range $key,$value := .Values.Persistence.VolumeClaimTemplates.Selector.MatchLabels }}
+          {{ $key }} : {{ $value }}
+          {{- end }}
+  {{- end }}

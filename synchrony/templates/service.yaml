@@ -1,0 +1,21 @@
+# Documentation: https://kubernetes.io/docs/concepts/services-networking/service/
+apiVersion: v1
+kind: Service
+metadata:
+  name: synchrony
+  labels:
+  {{- include "synchrony-chart.labels" . | indent 4 }}
+  annotations:
+    {{- range $key, $value := .Values.Service.Annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: {{ .Values.Service.Port }}
+  selector:
+    app: {{ .Release.Name }}
+  clusterIP: None
+status:
+  loadBalancer: {}

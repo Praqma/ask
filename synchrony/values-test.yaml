@@ -1,0 +1,83 @@
+# Declare variables with default values to be passed into your templates.
+# To override them, you need to (a) either adjust this file, or (b) provide your own values file,
+# which overrides the values found here.
+
+Replicas: 1
+ContainerName: synchrony
+ContainerPort: 8091
+TerminationGracePeriodSeconds: 50
+
+RBAC:
+  Enabled: true
+
+Datacenter:
+  Enabled: false
+
+Confluence:
+  db_url: jdbc:postgresql://postgres-confluence-postgresql:5432/confluence
+
+Synchrony:
+  domain: synchrony.example.com
+
+Image:
+  Name: "praqma/synchrony"
+  Tag: "latest"
+  ImagePullPolicy: "Always"
+  PrivateRegistry: true
+  PullSecret: "docker-hub-credentials"
+
+EnvVars: {}
+
+Resources:
+  cpuRequest: 1000m
+  cpuLimit: 2000m
+  memoryRequest: 1024Mi
+  memoryLimit: 2048Mi
+
+SecurityContext: 1000
+
+Service:
+  Type: None
+  Port: 8091
+  Protocol: TCP
+
+Ingress:
+  Enabled: true
+  Host: synchrony.example.com
+  ServicePort: 8091
+  Annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/rewrite-target: /
+
+tolerations: []
+# Don't forget to remove the brackets above if you want to use tolerations.
+# - key: "key"
+#   operator: "Equal"
+#   value: "value"
+#   effect: "NoSchedule"
+
+## Affinity for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+  # Don't forget to remove the brackets above if you want to use affinity.
+  # podAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: security
+  #           operator: In
+  #           values:
+  #           - S1
+  #       topologyKey: failure-domain.beta.kubernetes.io/zone
+  #   podAntiAffinity:
+  #     preferredDuringSchedulingIgnoredDuringExecution:
+  #     - weight: 100
+  #       podAffinityTerm:
+  #         labelSelector:
+  #           matchExpressions:
+  #           - key: security
+  #             operator: In
+  #             values:
+  #             - S2
+  #         topologyKey: kubernetes.io/hostname

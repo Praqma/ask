@@ -1,0 +1,44 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "synchrony-chart.labels" . | indent 4 }}
+  name: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.Replicas | default 1 }}
+  selector:
+    matchLabels:
+      app:  {{ .Release.Name }}
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app:  {{ .Release.Name }}
+    spec:
+      containers:
+      - image: {{ .Values.Image.Name }}:{{ .Values.Image.Tag }}
+        name: {{ .Release.Name }}
+        ports:
+        - containerPort: {{ .Values.ContainerPort }}
+          name: synchrony
+          {{- if .Values.Resources }}
+          resources:
+            requests:
+              cpu: "{{ .Values.Resources.cpuRequest }}"
+              memory: "{{ .Values.Resources.memoryRequest }}"
+            limits:
+              cpu: "{{ .Values.Resources.cpuLimit }}"
+              memory: "{{ .Values.Resources.memoryLimit }}"
+          {{- end }}
+        imagePullPolicy: {{ .Values.Image.ImagePullPolicy }}
+        env:
+        - name: DATABASE_URL
+          value: {{ .Values.Confluence.db_url }}
+        - name: SYNCHRONY_URL
+          value: https://{{ .Values.Synchrony.domain }}/synchrony
+        {{- range $key, $value := .Values.EnvVars }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.Image.PullSecret }}

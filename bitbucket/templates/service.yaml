@@ -1,0 +1,39 @@
+# Documentation: https://kubernetes.io/docs/concepts/services-networking/service/
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+  {{- include "bitbucket-chart.labels" . | indent 2 }}
+    serviceType: http
+
+  annotations:
+  {{- if .Values.PrometheusMetrics.Enabled }}
+    prometheus.io/scrape: "true"
+    prometheus.io/path: {{ .Values.PrometheusMetrics.Path  | quote }}
+    prometheus.io/port: {{ .Values.Service.Port | quote }}
+  {{- end }}
+  {{- range $key, $value := .Values.Service.Annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+
+spec:
+  ports:
+    # port is what this service should serve on, and targetPort is the port in the container.
+    - port: {{ .Values.Service.Port }}
+      name: bitbucket-main
+      targetPort: {{ .Values.Service.Port }}
+      protocol: {{ .Values.Service.Protocol }}
+    - port: 8888
+      name: bitbucket-internal-connector
+      targetPort: 8888
+      protocol: TCP
+
+{{- if .Values.Datacenter.Enabled }}
+  clusterIP: None
+{{- else }}
+  type: {{ .Values.Service.Type | default "ClusterIP" }}
+{{- end }}
+
+  selector:
+    app: {{ .Release.Name }}

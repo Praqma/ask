@@ -1,0 +1,47 @@
+# Documentation: https://kubernetes.io/docs/concepts/services-networking/service/
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+  {{- include "jira-chart.labels" . | indent 4 }}
+
+  annotations:
+  {{- if .Values.PrometheusMetrics.Enabled }}
+    prometheus.io/scrape: "true"
+    prometheus.io/path: {{ .Values.PrometheusMetrics.Path  | quote }}
+    prometheus.io/port: {{ .Values.Service.Port | quote }}
+  {{- end }}
+  {{- range $key, $value := .Values.Service.Annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+spec:
+  ports:
+    # port is what this service should serve on, and targetPort is the port in the container.
+    - port: {{ .Values.Service.Port }}
+      name: jira-main
+      targetPort: {{ .Values.Service.Port }}
+      protocol: {{ .Values.Service.Protocol }}
+    - port: 8888
+      name: jira-internal-connector
+      targetPort: 8888
+      protocol: TCP
+  {{- if .Values.Datacenter.Enabled }}
+    - port: 40001
+      name: rmi
+      protocol: TCP
+      targetPort: 40001
+    - port: 40011
+      name: remote-object
+      protocol: TCP
+      targetPort: 40011
+  {{- end }}
+
+{{- if .Values.Datacenter.Enabled }}
+  clusterIP: None
+{{- else }}
+  type: {{ .Values.Service.Type | default "ClusterIP" }}
+{{- end }}
+
+  selector:
+    app: {{ .Release.Name }}

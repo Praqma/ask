@@ -1,0 +1,28 @@
+{{- if .Values.deploy }}
+{{- if not .Values.persistence.existingClaimName }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-elasticsearch-pvc
+  labels:
+    app: {{ template "elasticsearch.name" . }}
+    chart: {{ template "elasticsearch.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    kubernetes.io/cluster-service: "true"
+spec:
+  accessModes: [ {{ .Values.persistence.volumeClaimTemplates.accessModes | quote }} ]
+  resources:
+    requests:
+      storage: {{ .Values.persistence.volumeClaimTemplates.storage | quote }}
+  storageClassName: {{ .Values.persistence.volumeClaimTemplates.storageClassName | quote }}
+  {{- if .Values.persistence.volumeClaimTemplates.selector.enabled }}
+  selector:
+    matchLabels:
+      {{- range $key,$value := .Values.persistence.volumeClaimTemplates.selector.matchLabels }}
+      {{ $key }} : {{ $value }}
+      {{- end }}
+ {{- end }}
+
+{{- end }}
+{{- end }}

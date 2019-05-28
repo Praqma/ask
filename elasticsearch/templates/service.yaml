@@ -1,0 +1,22 @@
+{{- if .Values.deploy }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "elasticsearch.fullname" . }}
+  labels:
+    app: {{ template "elasticsearch.name" . }}
+    chart: {{ template "elasticsearch.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "Elasticsearch"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: rest
+      protocol: TCP
+  selector:
+    app: {{ template "elasticsearch.name" . }}
+    release: {{ .Release.Name }}
+{{- end }}

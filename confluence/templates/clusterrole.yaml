@@ -1,0 +1,26 @@
+{{- if .Values.RBAC.Enabled }}
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: confluence
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+      - pods
+      - services
+      - endpoints
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+{{- end }}

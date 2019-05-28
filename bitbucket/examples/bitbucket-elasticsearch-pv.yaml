@@ -1,0 +1,15 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: bitbucket-elasticsearch-pv
+  labels:
+    product: atlassian-bitbucket
+    type: elasticsearch
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/bitbucket-elasticsearch-pv"

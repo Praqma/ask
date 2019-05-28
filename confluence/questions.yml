@@ -1,0 +1,360 @@
+categories:
+- Atlassian
+- Confluence
+questions:
+- variable: Replicas
+  description: "How many replicas of confluence do you want to have?"
+  type: int
+  default: 1
+  required: true
+  label: Confluence Replicas
+
+- variable: RBAC.ENABLED
+  default: true
+  description: "Whether to use RBAC or not."
+  type:  boolean 
+  required: true
+  label: Use RBAC?   
+  
+- variable: ContainerName
+  default: "confluence"
+  description: "Container Name inside the pods."
+  type: string
+  label: Confluence container name
+
+- variable: ContainerPort
+  default: 8090
+  #description: "Container port"
+  type: int
+  label: Confluence container port 
+
+- variable: TerminationGracePeriodSeconds
+  default: 50
+  #description: "Termination grace period in seconds"
+  type: int
+  label: Termination grace period in seconds   
+
+- variable: SecurityContext
+  default: 1000
+  #description: "pod security context"
+  type: int
+  label: Pod security context 
+
+ ## Resources 
+- variable: Resources.cpuRequest
+  default: "100m"
+  #description: "cpu request"
+  type: string
+  label: CPU request   
+
+- variable: Resources.cpuLimit
+  default: "1500m"
+  #description: "cpu limit"
+  type: string
+  label: CPU limit 
+
+- variable: Resources.memoryRequest
+  default: "2048Mi"
+  #description: "memory request"
+  type: string
+  label: Memory request 
+  
+- variable: Resources.memoryLimit
+  default: "3072Mi"
+  #description: "memory limit"
+  type: string
+  label: Memory limit 
+
+## certs
+- variable: Certs.Enabled
+  default: false
+  #description: "Confluece certs enabled?"
+  type: boolean
+  label: Confluence certs enabled? 
+  show_subquestions_if: true
+  group: "Certs"
+  subquestions: 
+  - variable: Certs.SecretName
+    type: string
+    required: true
+    label: Name of the secret containing certs
+    #description: Name of the secret containing certs
+  - variable: Certs.MountPath
+    type: string
+    required: true
+    default: "/var/atlassian/certs/"
+    label: Certs mount path inside the container
+    #description: Certs mount path inside the container    
+
+## Env vara
+- variable: EnvVars.X_PROXY_NAME
+  default: "confluence.example.com"
+  type: string
+  label: X_PROXY_NAME
+  #description: X_PROXY_NAME
+
+- variable: EnvVars.X_PROXY_Port
+  default: 443
+  type: int
+  label: X_PROXY_PORT
+  #description: X_PROXY_PORT
+
+- variable: EnvVars.X_PROXY_SCHEME
+  default: "https"
+  type: enum
+  options: 
+    - "https"
+    - "http"
+  label: X_PROXY_SCHEME
+  #description: X_PROXY_SCHEME
+
+# - variable: EnvVars.ADDITIONAL_CONNECTOR
+#   default: true
+#   type: boolean
+#   label: Confluence ADDITIONAL_CONNECTOR
+#   description: Confluence ADDITIONAL_CONNECTOR
+
+## image   
+- variable: Image.Name
+  type: string
+  default: "praqma/confluence-server"
+  required: true
+  label: "Docker image name"
+  #description: "docker image name"
+
+- variable: Image.Tag
+  type: string
+  default: "6.4.2"
+  required: true
+  label: "Docker image tag"
+  #description: "docker image tag"
+
+- variable: Image.ImagePullPolicy
+  type: enum
+  default: "IfNotPresent"
+  required: true
+  label: "Docker image pull policy"
+  options:
+    - "IfNotPresent"
+    - "Always"
+  #description: "docker image pull policy"
+  
+- variable: Image.PrivateRegistry
+  type: boolean
+  default: true
+  required: true
+  label: "The docker image is private?"
+  #description: "is private docker image?"  
+
+- variable: Image.PullSecret
+  type: string
+  show_if: "Image.PrivateRegistry=true"
+  required: true
+  default: "docker-hub-credentials"
+  label: "Docker registry secret"
+  #description: "docker registry secret"
+
+
+
+## Cofluence persistence
+- variable: Persistence.VolumeClaimTemplates.AccessModes
+  type: enum
+  group: "Confluence persistent storage"
+  default: "ReadWriteOnce"  
+  #description: "Confluence persistent storage claim access modes"
+  label: "Confluence persistent storage claim access modes" 
+  options: 
+    - "ReadWriteOnce"
+    - "ReadWriteMany"
+    - "ReadOnlyMany"
+
+- variable: Persistence.VolumeClaimTemplates.Storage
+  type: string
+  group: "Confluence persistent storage"
+  default: "20Gi"  
+  #description: "Confluence persistent storage claim volume size"
+  label: "Confluence persistent storage claim volume size"   
+
+- variable: Persistence.VolumeClaimTemplates.StorageClassName
+  type: storageclass
+  group: "Confluence persistent storage"
+  default: "manual"  
+  #description: "Confluence persistent storage claim storage class name"
+  label: "Confluence persistent storage claim storage class name"
+
+- variable: Persistence.VolumeClaimTemplates.Selector.Enabled
+  type: boolean
+  group: "Confluence persistent storage"
+  default: false  
+  #description: "Confluence persistent storage claim volume selector"
+  label: "Confluence persistent storage claim volume selector"
+  show_subquestions_if: true
+  subquestions:
+  - variable: Persistence.VolumeClaimTemplates.Selector.MatchLabels
+    type: string
+    required: true
+    label: "Volume selector label"
+    #description: "Volume selector label"
+
+
+## Datacenter Persistence    
+
+- variable: Datacenter.Enabled
+  default: false
+  group: "Confluence Datacenter"
+  description: "Whether Confluence Datacenter or server is used."
+  type: boolean
+  required: true 
+  label: Install Datacenter Confluence?   
+
+- variable: Datacenter.Persistence  
+  #description: "Use an existing PVC for Datacenter?"
+  type: boolean
+  group: "Confluence Datacenter"
+  #default: true
+  label: "Use volumes for Datacenter?"
+  show_if: "Datacenter.Enabled=true"
+
+- variable: Datacenter.ExistingClaim 
+  type: boolean
+  group: "Confluence Datacenter"
+  show_if: "Datacenter.Persistence=true&&Datacenter.Enabled=true"
+  description: "Use an existing volume claim?"
+  label: "Use an existing volume claim?"
+
+- variable: Persistence.DatacenterExistingClaimName
+  type: string 
+  group: "Confluence Datacenter" 
+  show_if: "Datacenter.ExistingClaim=true&&Datacenter.Enabled=true"
+  #description: "Name of existing PVC claim."
+  label: "Name of the existing PVC"
+
+- variable: Persistence.DatacenterMountPath
+  type: string
+  group: "Confluence Datacenter"
+  show_if: "Datacenter.Persistence=true&&Datacenter.Enabled=true"
+  default: /var/atlassian/confluence-datacenter/
+  #description: "Location of the Datacenter shared directory"
+  label: "location of the Datacenter shared directory."
+
+- variable: Persistence.DatacenterVolumeClaimTemplates.AccessModes   
+  type: enum
+  group: "Confluence Datacenter"
+  show_if: "Datacenter.Persistence=true&&Datacenter.ExistingClaim=false&&Datacenter.Enabled=true"
+  default: ReadWriteMany 
+  #description: "Volume claim access modes."
+  label: "Volume claim access modes."
+  options: 
+    - "ReadWriteOnce"
+    - "ReadWriteMany"
+    - "ReadOnlyMany"
+
+- variable: Persistence.DatacenterVolumeClaimTemplates.StorageClassName
+  type: storageclass
+  group: "Confluence Datacenter"
+  default: manual
+  show_if: "Datacenter.Persistence=true&&Datacenter.ExistingClaim=false&&Datacenter.Enabled=true"
+  #description: "Volume claim storage class"
+  label:  "Volume claim storage class"
+- variable: Persistence.DatacenterVolumeClaimTemplates.Storage
+  type: string
+  group: "Confluence Datacenter"
+  default: 20Gi
+  show_if: "Datacenter.Persistence=true&&Datacenter.ExistingClaim=false&&Datacenter.Enabled=true"
+  #description: "Volume claim storage size"
+  label: "Volume claim storage size"   
+- variable: Persistence.DatacenterVolumeClaimTemplates.Selector.Enabled
+  type: boolean
+  group: "Confluence Datacenter"
+  default: false
+  show_if: "Datacenter.Persistence=true&&Datacenter.ExistingClaim=false&&Datacenter.Enabled=true"
+  #description: "selector for volume claim"
+  label: "Selector for volume claim"
+  show_subquestions_if: true
+  subquestions:
+  - variable: Persistence.DatacenterVolumeClaimTemplates.Selector.MatchLabels
+    type: string
+    required: true
+    label: "Volume selector label"
+    #description: "Volume selector label"
+
+## Service
+- variable: Service.Type
+  type: enum
+  group: "Service"
+  options: 
+    - "ClusterIP"
+    - "NodePort"
+    - "LoadBalancer"
+  default: "ClusterIP"
+  label: Service type
+  #description: Service type
+
+- variable: Service.Port
+  type: int
+  group: "Service"
+  default: 8090
+  label: Service port 
+  #description: Service port 
+
+- variable: Service.Protocol
+  type: string
+  group: "Service"
+  default: "TCP"
+  label: Service protocol 
+  #description: Service protocol
+
+- variable: Service.Annotations
+  type: string
+  group: "Service"
+  default: "traefik.backend.loadbalancer.sticky: 'true'"
+  label: Service annotation
+  #description: Service annotaion    
+
+- variable: Ingress.Enabled
+  type: boolean
+  label: Ingress enabled?
+  #description: Ingress enabled?
+  show_subquestions_if: true
+  group: "Ingress"
+  subquestions: 
+  - variable: Ingress.Host
+    type: string
+    default: "confluence.example.com"
+    label: Confluence hostname
+    #description: Confliuence hostname
+  - variable: Ingress.ServicePort
+    type: int
+    default: 8090
+    label: Ingress service port 
+    #description: Ingress service port 
+
+## Pod Disruption
+- variable: PodDisruption.Enabled
+  type: boolean
+  default: false
+  label: Pod disruption budget enabled?
+  #description: Pod disruption budget enabled?
+  show_subquestions_if: true
+  group: "Pod Disruption Budget"
+  subquestions:
+  - variable: PodDisruption.MinAvailable
+    type: int
+    default: 1
+    label: Minimum available pods allowed
+    #description: Minimum available pods allowed
+
+## Promethues
+- variable: PrometheusMetrics.Enabled
+  type: boolean
+  default: false
+  label: Prometheus Metrics enabled?
+  #description: Prometheus Metrics enabled?
+  show_subquestions_if: true
+  group: "Prometheus Metrics"
+  subquestions:
+  - variable: PrometheusMetrics.Path
+    type: string
+    default: "/plugins/servlet/prometheus/metrics"
+    label: Prometheus Metrics path 
+    #description: Prometheus Metrics path     

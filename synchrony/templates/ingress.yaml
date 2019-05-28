@@ -1,0 +1,21 @@
+{{- if .Values.Ingress.Enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+  annotations:
+    {{- range $key, $value := .Values.Ingress.Annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  rules:
+  - host: {{ .Values.Ingress.Host }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: synchrony
+          servicePort: {{ .Values.Ingress.ServicePort }}
+{{- end }}

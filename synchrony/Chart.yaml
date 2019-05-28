@@ -1,0 +1,8 @@
+apiVersion: v1
+description: A synchrony chart
+name: synchrony
+version: 0.0.7
+home: https://praqma.com/
+maintainers:
+  - name: "@ctael5co"
+    email: cta@praqma.com
