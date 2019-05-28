@@ -7,7 +7,7 @@ The charts are built with circleci and pushed into a public ASK helm repository.
 To configure the repository on your machine:
 
 ```
-helm repo add praqma https://praqma-helm-repo.s3.amazonaws.com/
+helm repo add ask https://praqma-helm-repo.s3.amazonaws.com/
 helm repo update
 helm search ask
 ```
