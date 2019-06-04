@@ -6,7 +6,7 @@ replicaCount: 1
 deploy: true
 
 image:
-  repository: praqma/orbit-elasticsearch
+  repository: praqma/ask-elasticsearch
   tag: 5.5.3
   pullPolicy: Always
   privateRegistry: true
