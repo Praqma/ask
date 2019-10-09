@@ -44,7 +44,7 @@ mkdir -p .charts
 
 echo "linting ..."
 for d in */ ; do
-    if [ "$d" != "docs/" ]; then
+    if [ "$d" != "docs/" ] && [ "$d" != "images/" ]; then
       echo "linting package $d"
       helm lint $d
       if [ $? -gt 0 ]; then
@@ -56,7 +56,7 @@ done
 
 echo "building ..."
 for d in */ ; do
-    if [ "$d" != "docs/" ]; then
+    if [ "$d" != "docs/" ] && [ "$d" != "images/" ]; then
       echo "building package $d"
       if [ -e $d/requirements.yaml ]; then
         cd $d;
