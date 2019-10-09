@@ -1,0 +1,8 @@
+version: 2
+jobs:
+    build:
+      docker:
+        - image: praqma/helm-aws:2.14.1
+      steps:
+        - checkout
+        - run: .circleci/build.sh
