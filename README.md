@@ -1,8 +1,8 @@
-# ASK Helm Repo
+# ASK Helm Repo [![CircleCI](https://circleci.com/gh/Praqma/ask/tree/master.svg?style=svg&circle-token=3b7cc9798969fc823042248e4a9f38b22a7abaa3)](https://circleci.com/gh/Praqma/ask/tree/master)
 
 ![ASK-Logo](images/ask-logo.png)
 
-This respository is a component of **[ASK](https://www.praqma.com/products/ask/) Atlassian Software in Kubernetes**.
+This repository is a component of **[ASK](https://www.praqma.com/products/ask/) Atlassian Software in Kubernetes**.
 The charts are built with CircleCI and pushed into a public ASK helm repository.
 
 These Helm charts relies on the Docker images found in these repositories :
