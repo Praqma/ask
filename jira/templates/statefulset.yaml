@@ -1,13 +1,16 @@
-# Note: DO NOT use TABs. Just use spaces.
+# Statefulset are in beta state in k8s 1.5-1.8
+apiVersion: {{ .Values.apiVersion | default "apps/v1beta1" }}
 
-apiVersion: apps/v1beta1
+# Statefulsets are in GA state in k8s 1.9+ (not beta anymore)
+# apiVersion: apps/v1
+
 ## We needed to use VolumeTemplate, which does not allow use of Deployment, so we had to use StatefulSet
 # kind: Deployment
 kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}
   labels:
-{{- include "confluence-chart.labels" . | indent 4 }}
+{{- include "jira-chart.labels" . | indent 4 }}
 spec:
   # This service should already exist
   serviceName: {{ .Release.Name }}
@@ -18,14 +21,14 @@ spec:
         app: {{ .Release.Name }}
     spec:
       {{- if .Values.RBAC.Enabled }}
-      serviceAccountName: confluence
+      serviceAccountName: jira
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.TerminationGracePeriodSeconds | default 50 }}
       containers:
       - name: {{ required "A container name is required!" .Values.ContainerName }}
         image: {{ .Values.Image.Name }}:{{ .Values.Image.Tag }}
         imagePullPolicy: {{ .Values.Image.ImagePullPolicy }}
-        # Resources were added by Kamran on 17 Feb 2018
+        # Resources were added by Kamran on 08 Mar 2018
         {{- if .Values.Resources }}
         resources:
           requests:
@@ -38,10 +41,12 @@ spec:
 
         ports:
           - containerPort: {{ .Values.ContainerPort }}
-            name: confluence-main
+            name: jira-main
           {{- if .Values.Datacenter.Enabled }}
-          - containerPort: 8091
-            name: synchrony
+          - containerPort: 40001
+            name: rmi
+          - containerPort: 40011
+            name: remote-object
           {{- end }}
 
         env:
@@ -54,30 +59,29 @@ spec:
         {{- if .Values.Datacenter.Enabled }}
           - name: DATACENTER_MODE
             value: "true"
-          - name: CONFLUENCE_DATACENTER_SHARE
+          - name: JIRA_DATACENTER_SHARE
             value: {{ .Values.Persistence.DatacenterMountPath }}
           - name: POD_IP
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
-          - name: CONFLUENCE_POD_NAME
+          - name: JIRA_POD_NAME
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
-          - name: CONFLUENCE_NAMESPACE
+          - name: JIRA_NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: CONFLUENCE_SERVICE_NAME
-            value: {{ .Release.Name }}
         {{- end }}
+
         {{- range $key, $value := .Values.EnvVars }}
           - name: {{ $key }}
             value: {{ $value | quote }}
         {{- end }}
-        {{- if .Values.PluginIds }}
+        {{- if .Values.PluginIds}}
           - name: PLUGIN_IDS
-            value: {{- range .Values.PluginIds }} {{ . }}; {{- end }}
+            value: {{- range .Values.PluginIds}} {{ . }}; {{- end }}
         {{- end }}
 
         {{- if .Values.livenessProbe }}
@@ -94,38 +98,38 @@ spec:
         {{- end }}
 
         volumeMounts:
-          - name: "confluence-persistent-storage"
-            mountPath: /var/atlassian/application-data/confluence/
+          - name: "jira-persistent-storage"
+            mountPath: /var/atlassian/application-data/jira
           {{- if .Values.Datacenter.Enabled }}
-          - name: "confluence-datacenter"
+          - name: "jira-datacenter"
             mountPath: {{ .Values.Persistence.DatacenterMountPath }}
           {{- end }}
           {{- if .Values.Certs.Enabled }}
-          - name: "confluence-certs"
+          - name: "jira-certs"
             mountPath: {{ .Values.Certs.MountPath }}
           {{- end }}
 
       volumes:
-        {{- if .Values.Certs.Enabled }}
-        - name: confluence-certs
+       {{- if .Values.Certs.Enabled }}
+        - name: jira-certs
           secret:
             secretName: {{ .Values.Certs.SecretName }}
-        {{- end }}
+      {{- end }}
       {{- if .Values.Datacenter.Enabled }}
-        - name: "confluence-datacenter"
+        - name: "jira-datacenter"
           persistentVolumeClaim:
             claimName: {{ .Values.Persistence.DatacenterExistingClaimName | default (printf "%v-datacenter-pvc" .Release.Name) }}
       {{- end }}
 
       # This is pod level security context.
-       # The only relevant directive is fsGroup, which creates/prepares the mounted volume by 'chgrp'-ing it to the ID mentioned as fsGroup.
-          # The volume mount then has the group sticky bit turned on (setgid) , so  new files created in the volume will be owned by fsGroup;
-          #     which enables the user (uid 1000 in our / Confluence case) to be able to write in that volume.
+      # The only relevant directive is fsGroup, which creates/prepares the mounted volume by 'chgrp'-ing it to the ID mentioned as fsGroup.
+      # The volume mount then has the group sticky bit turned on (setgid) , so  new files created in the volume will be owned by fsGroup;
+      #     which enables the user (uid 1000 in our / JIRA case) to be able to write in that volume.
 
-          # Note: runAsUser is useless in this situation.
-          # runAsUser: 1000
-          # The details about securityContext are here:
-          # * - https://kubernetes.io/docs/api-reference/v1.6/#podsecuritycontext-v1-core
+      # Note: runAsUser is useless in this situation.
+      # runAsUser: 1000
+      # The details about securityContext are here:
+      # * - https://kubernetes.io/docs/api-reference/v1.6/#podsecuritycontext-v1-core
       securityContext:
         fsGroup: {{ .Values.SecurityContext }}
       {{- if .Values.Image.PrivateRegistry }}
@@ -138,18 +142,18 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+    {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
+    {{- end }}
+    {{- with .Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
-      {{- end }}
+    {{- end }}
 
   volumeClaimTemplates:
   - metadata:
-      name: confluence-persistent-storage
+      name: jira-persistent-storage
     spec:
       accessModes: [ {{ .Values.Persistence.VolumeClaimTemplates.AccessModes | quote }} ]
       resources:

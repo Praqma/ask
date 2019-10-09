@@ -1,7 +1,7 @@
 apiVersion: v1
 description: A Confluence Server Helm chart for Kubernetes
 name: confluence
-version: 0.4.1
+version: 0.4.2
 home: https://praqma.com/
 maintainers:
   - name: "@sami-alajrami"

@@ -1,35 +1,29 @@
-# Statefulset are in beta state in k8s 1.5-1.8
-# apiVersion: apps/v1beta1
-apiVersion: apps/v1beta1
-
-# Statefulsets are in GA state in k8s 1.9+ (not beta anymore)
-# apiVersion: apps/v1
-
+apiVersion: {{ .Values.apiVersion | default "apps/v1beta1" }}
 ## We needed to use VolumeTemplate, which does not allow use of Deployment, so we had to use StatefulSet
 # kind: Deployment
 kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}
   labels:
-{{- include "jira-chart.labels" . | indent 4 }}
+{{- include "bitbucket-chart.labels" . | indent 2 }}
 spec:
   # This service should already exist
   serviceName: {{ .Release.Name }}
-  replicas: {{ .Values.Replicas | default 1 }}    ## replicas 2
+  replicas: {{ .Values.Replicas | default 1 }}
   template:
     metadata:
       labels:
         app: {{ .Release.Name }}
     spec:
       {{- if .Values.RBAC.Enabled }}
-      serviceAccountName: jira
+      serviceAccountName: bitbucket
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.TerminationGracePeriodSeconds | default 50 }}
       containers:
       - name: {{ required "A container name is required!" .Values.ContainerName }}
         image: {{ .Values.Image.Name }}:{{ .Values.Image.Tag }}
         imagePullPolicy: {{ .Values.Image.ImagePullPolicy }}
-        # Resources were added by Kamran on 08 Mar 2018
+
         {{- if .Values.Resources }}
         resources:
           requests:
@@ -42,13 +36,7 @@ spec:
 
         ports:
           - containerPort: {{ .Values.ContainerPort }}
-            name: jira-main
-          {{- if .Values.Datacenter.Enabled }}
-          - containerPort: 40001
-            name: rmi
-          - containerPort: 40011
-            name: remote-object
-          {{- end }}
+            name: bitbucket-main
 
         env:
         {{- if .Values.Certs.Enabled }}
@@ -60,22 +48,21 @@ spec:
         {{- if .Values.Datacenter.Enabled }}
           - name: DATACENTER_MODE
             value: "true"
-          - name: JIRA_DATACENTER_SHARE
+          - name: BITBUCKET_DATACENTER_SHARE
             value: {{ .Values.Persistence.DatacenterMountPath }}
           - name: POD_IP
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
-          - name: JIRA_POD_NAME
+          - name: BITBUCKET_POD_NAME
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
-          - name: JIRA_NAMESPACE
+          - name: BITBUCKET_NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
         {{- end }}
-
         {{- range $key, $value := .Values.EnvVars }}
           - name: {{ $key }}
             value: {{ $value | quote }}
@@ -99,50 +86,51 @@ spec:
         {{- end }}
 
         volumeMounts:
-          - name: "jira-persistent-storage"
-            mountPath: /var/atlassian/application-data/jira
+          - name: bitbucket-persistent-storage
+            mountPath: /var/atlassian/application-data/bitbucket
           {{- if .Values.Datacenter.Enabled }}
-          - name: "jira-datacenter"
+          - name: "bitbucket-datacenter"
             mountPath: {{ .Values.Persistence.DatacenterMountPath }}
           {{- end }}
           {{- if .Values.Certs.Enabled }}
-          - name: "jira-certs"
+          - name: "bitbucket-certs"
             mountPath: {{ .Values.Certs.MountPath }}
           {{- end }}
 
       volumes:
-       {{- if .Values.Certs.Enabled }}
-        - name: jira-certs
-          secret:
-            secretName: {{ .Values.Certs.SecretName }}
-      {{- end }}
-      {{- if .Values.Datacenter.Enabled }}
-        - name: "jira-datacenter"
-          persistentVolumeClaim:
-            claimName: {{ .Values.Persistence.DatacenterExistingClaimName | default (printf "%v-datacenter-pvc" .Release.Name) }}
-      {{- end }}
+        {{- if .Values.Datacenter.Enabled }}
+          - name: "bitbucket-datacenter"
+            persistentVolumeClaim:
+              claimName: {{ .Values.Persistence.DatacenterExistingClaimName | default (printf "%v-datacenter-pvc" .Release.Name) }}
+          {{- end }}
+          {{- if .Values.Certs.Enabled }}
+            - name: bitbucket-certs
+              secret:
+                secretName: {{ .Values.Certs.SecretName }}
+          {{- end }}
 
       # This is pod level security context.
       # The only relevant directive is fsGroup, which creates/prepares the mounted volume by 'chgrp'-ing it to the ID mentioned as fsGroup.
-      # The volume mount then has the group sticky bit turned on (setgid) , so  new files created in the volume will be owned by fsGroup;
-      #     which enables the user (uid 1000 in our / JIRA case) to be able to write in that volume.
+          # The volume mount then has the group sticky bit turned on (setgid) , so  new files created in the volume will be owned by fsGroup;
+          #     which enables the user (uid 1000 in our / bitbucket case) to be able to write in that volume.
 
-      # Note: runAsUser is useless in this situation.
-      # runAsUser: 1000
-      # The details about securityContext are here:
-      # * - https://kubernetes.io/docs/api-reference/v1.6/#podsecuritycontext-v1-core
+          # Note: runAsUser is useless in this situation.
+          # runAsUser: 1000
+          # The details about securityContext are here:
+          # * - https://kubernetes.io/docs/api-reference/v1.6/#podsecuritycontext-v1-core
+
       securityContext:
-        fsGroup: {{ .Values.SecurityContext }}
+          fsGroup: {{ .Values.SecurityContext }}
       {{- if .Values.Image.PrivateRegistry }}
       imagePullSecrets:
       - name: {{ .Values.Image.PullSecret }}
       {{- end }}
 
 
-      {{- with .Values.nodeSelector }}
+    {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
-      {{- end }}
+    {{- end }}
     {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
@@ -154,7 +142,7 @@ spec:
 
   volumeClaimTemplates:
   - metadata:
-      name: jira-persistent-storage
+      name: bitbucket-persistent-storage
     spec:
       accessModes: [ {{ .Values.Persistence.VolumeClaimTemplates.AccessModes | quote }} ]
       resources:

@@ -1,6 +1,10 @@
 # Default values for mychart.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+
+# Can be changed to old api for compatibility reasons: extensions/v1beta1
+apiVersion: apps/v1
+
 Replicas: 1
 ContainerName: bitbucket
 

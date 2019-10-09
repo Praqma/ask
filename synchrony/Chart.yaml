@@ -1,7 +1,7 @@
 apiVersion: v1
 description: A synchrony chart
 name: synchrony
-version: 0.0.7
+version: 0.0.8
 home: https://praqma.com/
 maintainers:
   - name: "@ctael5co"

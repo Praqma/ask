@@ -2,6 +2,9 @@
 # To override them, you need to (a) either adjust this file, or (b) provide your own values file,
 # which overrides the values found here.
 
+# Can be changed to old api for compatibility reasons: extensions/v1beta1
+apiVersion: apps/v1
+
 Replicas: 1
 ContainerName: synchrony
 ContainerPort: 8091

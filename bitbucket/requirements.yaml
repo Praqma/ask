@@ -1,6 +1,6 @@
 dependencies:
   - name: elasticsearch
     repository: https://praqma-helm-repo.s3.amazonaws.com
-    version: 0.1.0
+    version: 0.1.1
     alias: elasticsearch
     condition: elasticsearch.enabled,global.elasticsearch.enabled
