@@ -79,22 +79,32 @@ spec:
           - name: {{ $key }}
             value: {{ $value | quote }}
         {{- end }}
-        {{- if .Values.PluginIds}}
-          - name: PLUGIN_IDS
-            value: {{- range .Values.PluginIds}} {{ . }}; {{- end }}
+        {{- if .Values.Plugins }}
+          - name: PLUGINS_FILE
+            value: /etc/config/jira-plugins.list
         {{- end }}
 
-        {{- if .Values.livenessProbe }}
+        {{- if .Values.LivenessProbe }}
         livenessProbe:
           httpGet:
             path: {{ .Values.LivenessProbe.Path }}
             port: {{ .Values.LivenessProbe.Port }}
+            periodSeconds: {{ .Values.LivenessProbe.PeriodSeconds | default 10 }}
+            successThreshold: {{ .Values.LivenessProbe.SuccessThreshold | default 1 }}
+            initialDelaySeconds: {{ .Values.LivenessProbe.InitialDelaySeconds | default 120 }}
+            timeoutSeconds: {{ .Values.LivenessProbe.TimeoutSeconds | default 1 }}
+            failureThreshold: {{ .Values.LivenessProbe.FailureThreshold | default 3 }}
         {{- end }}
         {{- if .Values.ReadinessProbe }}
         readinessProbe:
           httpGet:
             path: {{ .Values.ReadinessProbe.Path }}
             port: {{ .Values.ReadinessProbe.Port }}
+            periodSeconds: {{ .Values.ReadinessProbe.PeriodSeconds | default 10 }}
+            successThreshold: {{ .Values.ReadinessProbe.SuccessThreshold | default 1 }}
+            initialDelaySeconds: {{ .Values.ReadinessProbe.InitialDelaySeconds | default 120 }}
+            timeoutSeconds: {{ .Values.ReadinessProbe.TimeoutSeconds | default 1 }}
+            failureThreshold: {{ .Values.ReadinessProbe.FailureThreshold | default 3 }}
         {{- end }}
 
         volumeMounts:
@@ -108,6 +118,10 @@ spec:
           - name: "jira-certs"
             mountPath: {{ .Values.Certs.MountPath }}
           {{- end }}
+          {{- if .Values.Plugins }}
+          - name: pulgins-list
+            mountPath: /etc/config/jira-plugins.list
+          {{- end }}
 
       volumes:
        {{- if .Values.Certs.Enabled }}
@@ -119,6 +133,11 @@ spec:
         - name: "jira-datacenter"
           persistentVolumeClaim:
             claimName: {{ .Values.Persistence.DatacenterExistingClaimName | default (printf "%v-datacenter-pvc" .Release.Name) }}
+      {{- end }}
+      {{- if .Values.Plugins }}
+        - name: pulgins-list
+          configMap:
+            name: {{ .Release.Name }}
       {{- end }}
 
       # This is pod level security context.

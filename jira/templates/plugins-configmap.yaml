@@ -1,0 +1,11 @@
+{{- if .Values.Plugins }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+{{- include "jira-chart.labels" . | indent 4 }}
+data: 
+  jira-plugins.list: |
+{{ range .Values.Plugins }}{{ . | indent 4 }}{{"\n"}}{{ end }}
+{{- end }}

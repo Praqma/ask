@@ -46,12 +46,22 @@ EnvVars:
   JAVA_OPTS: ""
   CATALINA_OPTS: ""
 
-# livenessProbe:
-#   Path:
-#   Port:
+LivenessProbe: {}
+  # Path: /status
+  # Port: jira-main
+  # SuccessThreshold: 1
+  # PeriodSeconds: 10
+  # InitialDelaySeconds: 120
+  # TimeoutSeconds: 1
+  # FailureThreshold: 3
 ReadinessProbe:
   Path: /status
   Port: jira-main
+  SuccessThreshold: 1
+  PeriodSeconds: 10
+  InitialDelaySeconds: 120
+  TimeoutSeconds: 1
+  FailureThreshold: 3
 
 Resources:
   cpuRequest: 1000m
@@ -111,7 +121,8 @@ PrometheusMetrics:
 
 # list of plugins (plugin IDs) to be pre-installed
 Plugins: []
-  # - ru.andreymarkelov.atlas.plugins.prom-confluence-exporter
+  # - com.atlassian.upm.atlassian-universal-plugin-manager-plugin
+  # - com.atlassian.troubleshooting.plugin-jira
 
 ## Node labels for pod assignment
 ## ref: https://kubernetes.io/docs/user-guide/node-selection/
