@@ -14,7 +14,7 @@ Confluence:
   db_url: jdbc:postgresql://postgres-confluence-postgresql:5432/confluence
 
 Synchrony:
-  domain: synchrony.example.com
+  url: http://synchrony.example.com/synchrony
 
 Image:
   Name: "praqma/synchrony"
@@ -24,9 +24,9 @@ Image:
   PullSecret: "docker-hub-credentials"
 
 EnvVars:
-  DATABASE_USER: abc
-  DATABASE_PASSWORD: abc
-  JAVA_OPTS: "-Xss2048k -Xmx2g"
+  DATABASE_USER: confluenceuser
+  DATABASE_PASSWORD: confluence_password
+  JAVA_OPTS: "-Xss2048k -Xmx1g"
 
 Resources:
   cpuRequest: 1000m
