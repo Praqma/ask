@@ -1,5 +1,10 @@
 #!/bin/bash
 
+PUBLISH=false
+if [ "$1" == "publish" ]; then 
+PUBLISH=true
+fi
+
 function sanity_check() {
   if [ -z "${AWS_ACCESS_KEY_ID}" ]; then
     echo "AWS_ACCESS_KEY_ID found empty. Exiting ..."
@@ -71,25 +76,32 @@ for d in */ ; do
     fi
 done
 
-# pulling existing helm repo index.yaml to be merged with the new charts info.
-# Without this, old chart versions can become undiscoverable in the repo.
-aws s3 cp s3://$PRAQMA_S3_HELM_REPO_BUCKET_NAME/index.yaml oldIndex.yaml
+function publish() {
+  # pulling existing helm repo index.yaml to be merged with the new charts info.
+  # Without this, old chart versions can become undiscoverable in the repo.
+  aws s3 cp s3://$PRAQMA_S3_HELM_REPO_BUCKET_NAME/index.yaml oldIndex.yaml
 
-echo "generating index.yaml ..."
-helm repo index .charts --url $PRAQMA_S3_HELM_REPO_URL --merge oldIndex.yaml
+  echo "generating index.yaml ..."
+  helm repo index .charts --url $PRAQMA_S3_HELM_REPO_URL --merge oldIndex.yaml
 
-echo "pushing charts to $PRAQMA_HELM_REPO_NAME repo ..."
+  echo "pushing charts to $PRAQMA_HELM_REPO_NAME repo ..."
 
-# pushing charts to s3
-aws s3 cp .charts s3://$PRAQMA_S3_HELM_REPO_BUCKET_NAME/ --recursive
-if [ $? -gt 0 ]; then
-    echo "Failed to push charts to S3 ... Terminating!"
-    exit 9
+  # pushing charts to s3
+  aws s3 cp .charts s3://$PRAQMA_S3_HELM_REPO_BUCKET_NAME/ --recursive
+  if [ $? -gt 0 ]; then
+      echo "Failed to push charts to S3 ... Terminating!"
+      exit 9
+  fi
+
+
+  echo "updating repo ..."
+  helm repo update
+
+  echo "listing charts in $PRAQMA_HELM_REPO_NAME repo ..."
+  helm search $PRAQMA_HELM_REPO_NAME
+}
+
+if [ $PUBLISH == true ]; then 
+  publish
 fi
 
-
-echo "updating repo ..."
-helm repo update
-
-echo "listing charts in $PRAQMA_HELM_REPO_NAME repo ..."
-helm search $PRAQMA_HELM_REPO_NAME
