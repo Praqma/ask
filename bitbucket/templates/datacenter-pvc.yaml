@@ -10,7 +10,13 @@ spec:
   resources:
     requests:
       storage: {{ .Values.Persistence.DatacenterVolumeClaimTemplates.Storage | quote }}
-  storageClassName: {{ .Values.Persistence.DatacenterVolumeClaimTemplates.StorageClassName | quote }}
+  {{- if .Values.Persistence.DatacenterVolumeClaimTemplates.StorageClassName }}
+  {{- if (eq "-" .Values.Persistence.DatacenterVolumeClaimTemplates.StorageClassName) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: "{{ .Values.Persistence.DatacenterVolumeClaimTemplates.StorageClassName }}"
+  {{- end }}
+  {{- end }}
   {{- if .Values.Persistence.DatacenterVolumeClaimTemplates.Selector.Enabled }}
   selector:
     matchLabels:

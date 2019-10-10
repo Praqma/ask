@@ -15,9 +15,6 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
-      {{- if .Values.RBAC.Enabled }}
-      serviceAccountName: bitbucket
-      {{- end }}
       terminationGracePeriodSeconds: {{ .Values.TerminationGracePeriodSeconds | default 50 }}
       containers:
       - name: {{ required "A container name is required!" .Values.ContainerName }}
@@ -54,6 +51,8 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
+          - name: BITBUCKET_SERVICE_NAME
+            value: {{ default .Release.Name .Values.Service.Name }}      
           - name: BITBUCKET_POD_NAME
             valueFrom:
               fieldRef:
@@ -148,7 +147,13 @@ spec:
       resources:
         requests:
           storage: {{ .Values.Persistence.VolumeClaimTemplates.Storage | quote }}
-      storageClassName: {{ .Values.Persistence.VolumeClaimTemplates.StorageClassName | quote }}
+      {{- if .Values.Persistence.VolumeClaimTemplates.StorageClassName }}
+      {{- if (eq "-" .Values.Persistence.VolumeClaimTemplates.StorageClassName) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.Persistence.VolumeClaimTemplates.StorageClassName }}"
+      {{- end }}
+      {{- end }}
   {{- if .Values.Persistence.VolumeClaimTemplates.Selector.Enabled }}
       selector:
         matchLabels:
