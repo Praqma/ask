@@ -3,7 +3,7 @@
 ![ASK-Logo](images/ask-logo.png)
 
 This repository is a component of **[ASK](https://www.praqma.com/products/ask/) Atlassian Software in Kubernetes**.
-The charts are built with CircleCI and pushed into a public ASK helm repository.
+The charts are built with CircleCI and pushed into the public ASK helm repository.
 
 These Helm charts relies on the Docker images found in these repositories :
 - https://github.com/Praqma/jira
@@ -26,3 +26,10 @@ Then, you can install charts from that repo:
 ```
 helm install ask/jira
 ```
+
+# Contribution
+
+Contributions to the charts or the the docker images are welcome through PRs! Please refer to the [contribution guide](CONTRIBUTION.md) for more info. 
+
+# Support
+For support requests, please open an issue on this repo (and tag @hoeghh) or contact [info@praqma.com](mailto:info@praqma.com)
