@@ -94,6 +94,8 @@ Ingress:
   Enabled: true
   Host: confluence.example.com
   ServicePort: 8090
+  # Annotations:
+  #   - key: value
 
 PodDisruption:
   Enabled: false
