@@ -10,6 +10,9 @@ spec:
   # This service should already exist
   serviceName: {{ .Release.Name }}
   replicas: {{ .Values.Replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
