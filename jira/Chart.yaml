@@ -1,7 +1,7 @@
 apiVersion: v1
 description: A Jira-Server Helm chart for Kubernetes
 name: jira
-version: 1.0.0
+version: 1.0.1
 home: https://praqma.com/
 maintainers:
   - name: "@sami-alajrami"
