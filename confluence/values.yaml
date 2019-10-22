@@ -66,7 +66,7 @@ Persistence:
      StorageClassName: gp2
      Selector:
        Enabled: false
-       MatchLabels:
+       MatchLabels: {}
          # foo: foo
          # bar: bar
 
@@ -79,7 +79,7 @@ Persistence:
      StorageClassName: gp2
      Selector:
        Enabled: false
-       MatchLabels:
+       MatchLabels: {}
          # foo: foo
          # bar: bar
 
