@@ -113,6 +113,8 @@ Ingress:
   Enabled: true
   Host: jira.example.com
   ServicePort: 8080
+  # Optional: Define a path to use in the ingress
+  # Path: /jira
 
 # to add promethues annotations
 PrometheusMetrics:
