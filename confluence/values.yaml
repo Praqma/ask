@@ -96,6 +96,8 @@ Ingress:
   ServicePort: 8090
   # Annotations:
   #   - key: value
+  # Optional: Define a path to use in the ingress
+  Path: /confluence
 
 PodDisruption:
   Enabled: false
