@@ -97,7 +97,7 @@ Ingress:
   # Annotations:
   #   - key: value
   # Optional: Define a path to use in the ingress
-  Path: /confluence
+  # Path: /confluence
 
 PodDisruption:
   Enabled: false
