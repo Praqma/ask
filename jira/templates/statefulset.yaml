@@ -92,22 +92,22 @@ spec:
           httpGet:
             path: {{ .Values.LivenessProbe.Path }}
             port: {{ .Values.LivenessProbe.Port }}
-            periodSeconds: {{ .Values.LivenessProbe.PeriodSeconds | default 10 }}
-            successThreshold: {{ .Values.LivenessProbe.SuccessThreshold | default 1 }}
-            initialDelaySeconds: {{ .Values.LivenessProbe.InitialDelaySeconds | default 120 }}
-            timeoutSeconds: {{ .Values.LivenessProbe.TimeoutSeconds | default 1 }}
-            failureThreshold: {{ .Values.LivenessProbe.FailureThreshold | default 3 }}
+          periodSeconds: {{ .Values.LivenessProbe.PeriodSeconds | default 10 }}
+          successThreshold: {{ .Values.LivenessProbe.SuccessThreshold | default 1 }}
+          initialDelaySeconds: {{ .Values.LivenessProbe.InitialDelaySeconds | default 120 }}
+          timeoutSeconds: {{ .Values.LivenessProbe.TimeoutSeconds | default 1 }}
+          failureThreshold: {{ .Values.LivenessProbe.FailureThreshold | default 3 }}
         {{- end }}
         {{- if .Values.ReadinessProbe }}
         readinessProbe:
           httpGet:
             path: {{ .Values.ReadinessProbe.Path }}
             port: {{ .Values.ReadinessProbe.Port }}
-            periodSeconds: {{ .Values.ReadinessProbe.PeriodSeconds | default 10 }}
-            successThreshold: {{ .Values.ReadinessProbe.SuccessThreshold | default 1 }}
-            initialDelaySeconds: {{ .Values.ReadinessProbe.InitialDelaySeconds | default 120 }}
-            timeoutSeconds: {{ .Values.ReadinessProbe.TimeoutSeconds | default 1 }}
-            failureThreshold: {{ .Values.ReadinessProbe.FailureThreshold | default 3 }}
+          periodSeconds: {{ .Values.ReadinessProbe.PeriodSeconds | default 10 }}
+          successThreshold: {{ .Values.ReadinessProbe.SuccessThreshold | default 1 }}
+          initialDelaySeconds: {{ .Values.ReadinessProbe.InitialDelaySeconds | default 120 }}
+          timeoutSeconds: {{ .Values.ReadinessProbe.TimeoutSeconds | default 1 }}
+          failureThreshold: {{ .Values.ReadinessProbe.FailureThreshold | default 3 }}
         {{- end }}
 
         volumeMounts:
