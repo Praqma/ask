@@ -32,20 +32,20 @@ function sanity_check() {
   fi
 }
 
-# echo "performing sanity checks ..."
-# sanity_check
+echo "performing sanity checks ..."
+sanity_check
 
-# echo "initializing helm ..."
-# helm init --client-only
+echo "initializing helm ..."
+helm init --client-only
 
-# echo "creating repo URLs ..."
-# export PRAQMA_S3_HELM_REPO_URL="https://$PRAQMA_S3_HELM_REPO_BUCKET_NAME.s3.amazonaws.com/"
+echo "creating repo URLs ..."
+export PRAQMA_S3_HELM_REPO_URL="https://$PRAQMA_S3_HELM_REPO_BUCKET_NAME.s3.amazonaws.com/"
 
-# echo "adding helm repo ..."
-# helm repo add $PRAQMA_HELM_REPO_NAME $PRAQMA_S3_HELM_REPO_URL
+echo "adding helm repo ..."
+helm repo add $PRAQMA_HELM_REPO_NAME $PRAQMA_S3_HELM_REPO_URL
 
 echo "creating .charts & .generated directory ..."
-# mkdir -p .charts
+mkdir -p .charts
 mkdir -p .generated
 
 echo "linting ..."
@@ -78,22 +78,22 @@ for d in */ ; do
     fi
 done
 
-# echo "building ..."
-# for d in */ ; do
-#     if [ "$d" != "docs/" ] && [ "$d" != "images/" ]; then
-#       echo "building package $d"
-#       if [ -e $d/requirements.yaml ]; then
-#         cd $d;
-#         helm dependency update;
-#         cd ..
-#       fi
-#       helm package $d -d .charts
-#       if [ $? -gt 0 ]; then
-#         echo "Package $d has errors ... Terminating!"
-#         exit 9
-#       fi
-#     fi
-# done
+echo "building ..."
+for d in */ ; do
+    if [ "$d" != "docs/" ] && [ "$d" != "images/" ]; then
+      echo "building package $d"
+      if [ -e $d/requirements.yaml ]; then
+        cd $d;
+        helm dependency update;
+        cd ..
+      fi
+      helm package $d -d .charts
+      if [ $? -gt 0 ]; then
+        echo "Package $d has errors ... Terminating!"
+        exit 9
+      fi
+    fi
+done
 
 function publish() {
   # pulling existing helm repo index.yaml to be merged with the new charts info.
