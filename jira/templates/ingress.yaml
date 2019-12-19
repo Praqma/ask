@@ -10,8 +10,12 @@ spec:
   rules:
   - host: {{ .Values.Ingress.Host }}
     http:
-      paths:
+      paths: 
+      {{- if .Values.Ingress.Path }}
+      - path: {{ .Values.Ingress.Path }}
+      {{- else }}
       - path: /
+      {{- end }}
         backend:
           serviceName: {{ .Release.Name }}
           servicePort: {{ .Values.Ingress.ServicePort }}
