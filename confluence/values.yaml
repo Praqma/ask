@@ -95,7 +95,10 @@ Ingress:
   Host: confluence.example.com
   ServicePort: 8090
   # Annotations:
-  #   - key: value
+  #   ingress.kubernetes.io/force-ssl-redirect: "true"
+  Tls:
+    Enabled: False
+    SecretName: ""
 
 PodDisruption:
   Enabled: false

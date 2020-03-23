@@ -21,4 +21,10 @@ spec:
         backend:
           serviceName: {{ .Release.Name }}
           servicePort: {{ .Values.Ingress.ServicePort }}
+  {{- if .Values.Ingress.Tls.Enabled }}
+  tls:
+  - secretName: {{ .Values.Ingress.Tls.SecretName }}
+    hosts:
+    - {{ .Values.Ingress.Host }}
+  {{- end }}
 {{- end }}
