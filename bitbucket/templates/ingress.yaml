@@ -6,6 +6,12 @@ metadata:
   name: {{ .Release.Name }}
   labels:
     app: {{ .Release.Name }}
+  {{- if .Values.Ingress.Annotations }}
+  annotations:
+  {{- range $key, $value := .Values.Ingress.Annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- end }}  
 spec:
   rules:
   - host: {{ .Values.Ingress.Host }}
@@ -15,4 +21,10 @@ spec:
         backend:
           serviceName: {{ .Release.Name }}
           servicePort: {{ .Values.Ingress.ServicePort }}
+  {{- if .Values.Ingress.Tls.Enabled }}
+  tls:
+  - secretName: {{ .Values.Ingress.Tls.SecretName }}
+    hosts:
+    - {{ .Values.Ingress.Host }}
+  {{- end }}
 {{- end }}

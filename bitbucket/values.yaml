@@ -145,7 +145,11 @@ Ingress:
   Enabled: true
   Host: bitbucket.example.com
   ServicePort: 7990
-
+  # Annotations:
+  #   ingress.kubernetes.io/force-ssl-redirect: "true"
+  Tls:
+    Enabled: False
+    SecretName: ""
 
 # to add promethues annotations
 PrometheusMetrics:
