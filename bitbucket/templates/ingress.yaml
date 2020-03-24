@@ -6,12 +6,10 @@ metadata:
   name: {{ .Release.Name }}
   labels:
     app: {{ .Release.Name }}
-  {{- if .Values.Ingress.Annotations }}
+{{- if .Values.Ingress.Annotations }}
   annotations:
-  {{- range $key, $value := .Values.Ingress.Annotations }}
-    {{ $key }}: {{ $value | quote }}
-  {{- end }}
-  {{- end }}  
+{{ toYaml .Values.Ingress.Annotations | indent 4 }}
+{{- end }}
 spec:
   rules:
   - host: {{ .Values.Ingress.Host }}
