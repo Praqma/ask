@@ -113,6 +113,11 @@ Ingress:
   Enabled: true
   Host: jira.example.com
   ServicePort: 8080
+  # Annotations:
+  #   ingress.kubernetes.io/force-ssl-redirect: "true"
+  Tls:
+    Enabled: False
+    SecretName: ""
 
 # to add promethues annotations
 PrometheusMetrics:
