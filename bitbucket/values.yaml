@@ -132,9 +132,16 @@ PodDisruption:
   Enabled: false
   MinAvailable: 1
 
+SshService:
+  Enabled: false
+  Type: NodePort
+  # NodePort: 31000
+  # LoadBalancerIP: "1.2.3.4"
+  # Annotations:
+  #   key: value
+
 Service:
   #Name: "bitbucket"
-  SshNodePortService: false
   Type: ClusterIP
   Port: 7990
   Protocol: TCP

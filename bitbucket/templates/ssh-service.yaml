@@ -1,4 +1,4 @@
-{{- if .Values.Service.SshNodePortService }}
+{{- if .Values.SshService.Enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,7 +8,7 @@ metadata:
     serviceType: ssh
 
   annotations:
-  {{- range $key, $value := .Values.Service.Annotations }}
+  {{- range $key, $value := .Values.SshService.Annotations }}
     {{ $key }}: {{ $value | quote }}
   {{- end }}
 
@@ -19,9 +19,14 @@ spec:
       name: bitbucket-ssh-port
       targetPort: 7999
       protocol: TCP
+      {{- if and (eq .Values.SshService.Type "NodePort") .Values.SshService.NodePort }}
+      nodePort: {{ .Values.SshService.NodePort }}
+      {{- end }}
 
-
-  type: NodePort
+  type: {{ .Values.SshService.Type }}
+  {{- if and (eq .Values.SshService.Type "LoadBalancer") .Values.SshService.LoadBalancerIP }}
+  loadBalancerIP: {{ .Values.SshService.LoadBalancerIP }}
+  {{- end }}
 
   selector:
     app: {{ .Release.Name }}
