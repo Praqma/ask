@@ -104,12 +104,12 @@ spec:
           - name: "bitbucket-datacenter"
             persistentVolumeClaim:
               claimName: {{ .Values.Persistence.DatacenterExistingClaimName | default (printf "%v-datacenter-pvc" .Release.Name) }}
-          {{- end }}
-          {{- if .Values.Certs.Enabled }}
-            - name: bitbucket-certs
-              secret:
-                secretName: {{ .Values.Certs.SecretName }}
-          {{- end }}
+        {{- end }}
+        {{- if .Values.Certs.Enabled }}
+          - name: bitbucket-certs
+            secret:
+              secretName: {{ .Values.Certs.SecretName }}
+        {{- end }}
 
       # This is pod level security context.
       # The only relevant directive is fsGroup, which creates/prepares the mounted volume by 'chgrp'-ing it to the ID mentioned as fsGroup.
