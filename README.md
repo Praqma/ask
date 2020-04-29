@@ -19,7 +19,7 @@ To configure the repository on your machine:
 ```
 helm repo add ask https://praqma-helm-repo.s3.amazonaws.com/
 helm repo update
-helm search ask
+helm search repo ask
 ```
 
 Then, you can install charts from that repo:
