@@ -24,7 +24,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       {{- if .Values.RBAC.Enabled }}
-      serviceAccountName: jira
+      serviceAccountName: {{ .Release.Name }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.TerminationGracePeriodSeconds | default 50 }}
       containers:
